@@ -98,4 +98,21 @@ if __name__ == '__main__':
     del words
     print('Most common words (+UNK)', count[:5])
     print('Sample data', data[:10], [reverse_dictionary[i] for i in data[:10]])
-    batch, labels = generate_batch(batch_size=8, num_skips=2, skip_window=1, data=data)
+
+    batch_size = 128
+    embedding_size = 128  # 单词转为稠密向量的维度
+    skip_window = 1
+    num_skips = 2
+
+    valid_size = 16
+    valid_window = 100
+    valid_examples = np.random.choice(valid_window, valid_size, replace=False)  # 随机从频数最高的100个单词中抽取16个作为验证单词
+    num_sampled = 64  # 训练时作为负样本的噪声单词数量
+
+    batch, labels = generate_batch(batch_size=batch_size, num_skips=num_skips, skip_window=skip_window, data=data)
+
+    graph = tf.Graph()
+    with graph.as_default():
+        train_inputs = tf.placeholder(tf.int32, shape=[batch_size])
+        train_labels = tf.placeholder(tf.int32, shape=[batch_size, 1])
+        vallid_dataset = tf.constant(valid_examples, dtype=tf.int32)
